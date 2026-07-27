@@ -3,13 +3,13 @@ import pickle
 import numpy as np
 from flask import Flask, render_template, request, jsonify
 
-# Point template_folder to the parent directory's 'templates' folder
+# Base directory for the root folder
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 template_dir = os.path.join(BASE_DIR, 'templates')
 
 app = Flask(__name__, template_folder=template_dir)
 
-# Safely load pickle models from root directory
+# File paths for model artifacts
 model_path = os.path.join(BASE_DIR, 'diagonsis_detection.pkl')
 encoder_path = os.path.join(BASE_DIR, 'label_encoder.pkl')
 
@@ -33,9 +33,12 @@ def home():
 def predict():
     try:
         if pipeline is None or label_encoder is None:
-            return jsonify({'error': 'Model files failed to load'}), 500
+            return jsonify({'error': 'Model files failed to load on server'}), 500
 
         data = request.get_json()
+        if not data or 'features' not in data:
+            return jsonify({'error': 'Missing features payload'}), 400
+
         features = data.get('features')
         
         if not features or len(features) != 30:
@@ -55,5 +58,6 @@ def predict():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# Top-level export variable required by Vercel
-app = app 
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
+    
