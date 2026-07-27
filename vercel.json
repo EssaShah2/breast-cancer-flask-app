@@ -5,7 +5,8 @@
       "src": "api/app.py",
       "use": "@vercel/python",
       "config": {
-        "includeFiles": ["templates/**", "*.pkl"]
+        "includeFiles": ["templates/**", "*.pkl"],
+        "excludeFiles": ["*.ipynb", ".git/**", "__pycache__/**", ".ipynb_checkpoints/**"]
       }
     }
   ],
