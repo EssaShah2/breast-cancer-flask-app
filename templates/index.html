@@ -261,7 +261,7 @@
         }
 
         try {
-            const response = await fetch('/predict', {
+            const response = await fetch(window.location.origin + '/predict', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ features: features })

@@ -3,13 +3,10 @@ import pickle
 import numpy as np
 from flask import Flask, render_template, request, jsonify
 
-# Base directory for the root folder
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-template_dir = os.path.join(BASE_DIR, 'templates')
+app = Flask(__name__)
 
-app = Flask(__name__, template_folder=template_dir)
-
-# File paths for model artifacts
+# Load pickle files directly from root directory
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(BASE_DIR, 'diagonsis_detection.pkl')
 encoder_path = os.path.join(BASE_DIR, 'label_encoder.pkl')
 
@@ -33,12 +30,9 @@ def home():
 def predict():
     try:
         if pipeline is None or label_encoder is None:
-            return jsonify({'error': 'Model files failed to load on server'}), 500
+            return jsonify({'error': 'Model files failed to load'}), 500
 
         data = request.get_json()
-        if not data or 'features' not in data:
-            return jsonify({'error': 'Missing features payload'}), 400
-
         features = data.get('features')
         
         if not features or len(features) != 30:
@@ -59,5 +53,5 @@ def predict():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
-    
+    # Hugging Face MUST use port 7860 and host 0.0.0.0
+    app.run(host='0.0.0.0', port=7860)
