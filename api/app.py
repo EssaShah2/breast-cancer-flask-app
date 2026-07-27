@@ -1,20 +1,29 @@
-from flask import Flask, render_template, request, jsonify
+import os
 import pickle
 import numpy as np
+from flask import Flask, render_template, request, jsonify
 
-app = Flask(__name__)
+# Point template_folder to the parent directory's 'templates' folder
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+template_dir = os.path.join(BASE_DIR, 'templates')
 
-# --- ADD THE TWO LINES HERE ---
-app.config['TEMPLATES_AUTO_RELOAD'] = True
-app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
-# ------------------------------
+app = Flask(__name__, template_folder=template_dir)
 
-# Load saved pickle artifacts
-with open('diagonsis_detection.pkl', 'rb') as f:
-    pipeline = pickle.load(f)
+# Safely load pickle models from root directory
+model_path = os.path.join(BASE_DIR, 'diagonsis_detection.pkl')
+encoder_path = os.path.join(BASE_DIR, 'label_encoder.pkl')
 
-with open('label_encoder.pkl', 'rb') as f:
-    label_encoder = pickle.load(f)
+pipeline = None
+label_encoder = None
+
+try:
+    with open(model_path, 'rb') as f:
+        pipeline = pickle.load(f)
+
+    with open(encoder_path, 'rb') as f:
+        label_encoder = pickle.load(f)
+except Exception as err:
+    print(f"Error loading pickle files: {err}")
 
 @app.route('/')
 def home():
@@ -23,6 +32,9 @@ def home():
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
+        if pipeline is None or label_encoder is None:
+            return jsonify({'error': 'Model files failed to load'}), 500
+
         data = request.get_json()
         features = data.get('features')
         
@@ -43,5 +55,5 @@ def predict():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+# Top-level export variable required by Vercel
+app = app 
