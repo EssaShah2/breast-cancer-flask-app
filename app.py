@@ -16,7 +16,7 @@ st.write("Input the feature values below or load a test sample to evaluate the m
 @st.cache_resource
 def load_models():
     try:
-        with open("pipeline.pkl", "rb") as model_file:
+        with open("diagnosis_detection.pkl", "rb") as model_file:
             pipeline = pickle.load(model_file)
             
         with open("label_encoder.pkl", "rb") as le_file:
